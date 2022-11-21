@@ -1,0 +1,38 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ghcr.io/boxmein/ctf-cli
+
+jobs:
+
+  build_docker_image:
+    name: Push to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - run: |
+          docker buildx build \
+            --platform=linux/amd64,linux/aarch64 \
+            --tag ${{ env.IMAGE_TAG }} \
+            --push \
+            .
