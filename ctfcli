@@ -1,0 +1,6 @@
+# drop it in /usr/local/bin and +x it
+exec docker run --interactive \
+       --tty \
+       --rm \
+       --volume $(pwd):/data \
+       ghcr.io/boxmein/ctf-cli:latest
